@@ -22,9 +22,6 @@ def load_model():
     for k, v in dic.items():
         logging.info(k + ' = %r' % v)
 
-    print(list(dic['counter'].counters[0]))
-    # print(np.zeros((4, 5)))
-
     return dic['counter'], dic['ngram_size'], dic['vocab_size']
 
 

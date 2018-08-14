@@ -32,7 +32,7 @@ def line_reader(line, ngram_size, vocabulary):
         yield tuple(words[offset:offset + ngram_size - 1])
 
 
-def worker(pid, in_queue, out_list, args):
+def get_model(args):
     # choose the counting method base on args
     if args.accurate:
         counter = frequency_estimation.Simple()
@@ -46,17 +46,34 @@ def worker(pid, in_queue, out_list, args):
             hash_num=args.hash_num, hash_size=args.hash_size)
         model_type = 'count_min_sketch'
 
+    return counter, model_type
+
+
+def worker(pid, in_queue, out_list, args):
+    counter, model_type = get_model(args)
+
     vocabulary = set()
+    out_list.append((counter, vocabulary))
 
     while True:
         line = in_queue.get(block=True)
 
         if line is None:
-            out_list.append((counter, vocabulary))
             return
 
         for ngram in line_reader(line, args.ngram_size, vocabulary):
             counter.process(ngram)
+
+
+def merge_and_save_model(worker_results, args):
+    # save the model for future evaluation
+    merged_counter, model_type = get_model(args)
+    merged_vocab = set()
+    for counter, vocab in worker_results:
+        merged_counter += counter
+        merged_vocab |= vocab
+    save_model(merged_counter, model_type, len(
+        merged_vocab), args.output, args)
 
 
 def main():
@@ -74,18 +91,14 @@ def main():
         lines = itertools.chain(fin, (None,) * args.process)
         for i, line in enumerate(lines):
             work.put(line)
-            if (i + 1) % 100 == 0:
+            if (i + 1) % 1000 == 0:
                 logging.info('processed %d lines' % (i + 1))
+                merge_and_save_model(results, args)
 
     for p in pool:
         p.join()
 
-    # save the model for future evaluation
-    merged_counter, merged_vocab = results[0]
-    for counter, vocab in results[1:]:
-        merged_counter += counter
-        merged_vocab |= vocab
-    save_model(merged_counter, '<type?>', len(merged_vocab), args.output, args)
+    merge_and_save_model(results, args)
     logging.info('model saved to %s' % args.output)
 
 
