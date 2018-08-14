@@ -135,7 +135,7 @@ def main():
         model_type = 'count_sketch'
     else:
         counter = frequency_estimation.CountMinSketch(
-            hash_num=args.hash_num, hash_size=args.hash_size)
+            hash_num=args.hash_size, hash_size=args.hash_num)
         model_type = 'count_min_sketch'
 
     # load the input corpus
@@ -145,9 +145,11 @@ def main():
     for i, ngram in enumerate(reader):
         logging.debug('processing %s' % str(ngram))
         counter.process(ngram)
+
         if (i + 1) % 1000000 == 0:
             logging.info('processed %d ngrams' % (i + 1))
-            save_model(counter, model_type, reader.vocab_size, args.output)
+            save_model(counter, model_type, len(
+                reader.vocabulary), args.output)
 
     # save the model for future evaluation
     save_model(counter, model_type, reader.vocab_size, args.output)
