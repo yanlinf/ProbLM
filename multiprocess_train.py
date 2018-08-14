@@ -53,12 +53,11 @@ def worker(pid, in_queue, out_list, args):
     counter, model_type = get_model(args)
 
     vocabulary = set()
-    out_list.append((counter, vocabulary))
-
     while True:
         line = in_queue.get(block=True)
 
         if line is None:
+            out_list.append((counter, vocabulary))
             return
 
         for ngram in line_reader(line, args.ngram_size, vocabulary):
@@ -93,7 +92,7 @@ def main():
             work.put(line)
             if (i + 1) % 1000 == 0:
                 logging.info('processed %d lines' % (i + 1))
-                merge_and_save_model(results, args)
+                # merge_and_save_model(results, args)
 
     for p in pool:
         p.join()
