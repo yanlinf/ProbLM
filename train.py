@@ -185,8 +185,8 @@ if __name__ == '__main__':
                         )
     parser.add_argument('-ns', '--ngram_size',
                         type=int,
-                        default=5,
-                        help='ngrams of size ngram_size - 1 and ngram_size will be counted (default: 5)'
+                        default=3,
+                        help='ngrams of size ngram_size - 1 and ngram_size will be counted (default: 3)'
                         )
     parser.add_argument('-v', '--verbose',
                         help='increase verbosity',

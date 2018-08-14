@@ -74,7 +74,7 @@ def main():
         lines = itertools.chain(fin, (None,) * args.process)
         for i, line in enumerate(lines):
             work.put(line)
-            if (i + 1) % 1 == 0:
+            if (i + 1) % 100 == 0:
                 logging.info('processed %d lines' % (i + 1))
 
     for p in pool:
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     parser.add_argument('-ns', '--ngram_size',
                         type=int,
                         default=3,
-                        help='ngrams of size ngram_size - 1 and ngram_size will be counted (default: 5)'
+                        help='ngrams of size ngram_size - 1 and ngram_size will be counted (default: 3)'
                         )
     parser.add_argument('-v', '--verbose',
                         help='increase verbosity',
