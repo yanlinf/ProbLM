@@ -90,7 +90,7 @@ def main():
         lines = itertools.chain(fin, (None,) * args.process)
         for i, line in enumerate(lines):
             work.put(line)
-            if (i + 1) % 1000 == 0:
+            if (i + 1) % 100 == 0:
                 logging.info('processed %d lines' % (i + 1))
                 # merge_and_save_model(results, args)
 
