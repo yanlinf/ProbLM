@@ -98,7 +98,7 @@ class CorpusReader(object):
         self.vocab_size = len(self.vocabulary)
 
 
-def save_model(model, model_type, vocab_size, filepath):
+def save_model(model, model_type, vocab_size, filepath, args):
     """
     Helper function for saving a trained language model to a given location.
 
@@ -110,6 +110,7 @@ def save_model(model, model_type, vocab_size, filepath):
         the vocabulary size
     filepath: str
         the location to save the model
+    args: argparse.Namespace
 
     Returns: None
     """
@@ -135,7 +136,7 @@ def main():
         model_type = 'count_sketch'
     else:
         counter = frequency_estimation.CountMinSketch(
-            hash_num=args.hash_size, hash_size=args.hash_num)
+            hash_num=args.hash_num, hash_size=args.hash_size)
         model_type = 'count_min_sketch'
 
     # load the input corpus
@@ -149,10 +150,11 @@ def main():
         if (i + 1) % 1000000 == 0:
             logging.info('processed %d ngrams' % (i + 1))
             save_model(counter, model_type, len(
-                reader.vocabulary), args.output)
+                reader.vocabulary), args.output, args)
 
     # save the model for future evaluation
-    save_model(counter, model_type, reader.vocab_size, args.output)
+    save_model(counter, model_type, reader.vocab_size, args.output, args)
+    logging.info('model saved to %s' % args.output)
 
 
 if __name__ == '__main__':
@@ -214,5 +216,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    logging.basicConfig(level=args.loglevel)
+    logging.basicConfig(level=args.loglevel,
+                        format='%(asctime)s: %(levelname)s: %(message)s')
+
     main()
