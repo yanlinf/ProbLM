@@ -145,8 +145,9 @@ def main():
     for i, ngram in enumerate(reader):
         logging.debug('processing %s' % str(ngram))
         counter.process(ngram)
-        if (i + 1) % 100000 == 0:
+        if (i + 1) % 1000000 == 0:
             logging.info('processed %d ngrams' % (i + 1))
+            save_model(counter, model_type, reader.vocab_size, args.output)
 
     # save the model for future evaluation
     save_model(counter, model_type, reader.vocab_size, args.output)
