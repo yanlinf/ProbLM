@@ -29,16 +29,20 @@ class Sketch(object):
         self.hash_num = hash_num
         self.counters = np.zeros((hash_num, hash_size), dtype=int)
 
-    def myhash(self, x, hash_func=hashlib.md5):
+    def myhash(self, x, hash_func=hash):
         """
         :param x: element to be hashed
         :param hash_func: hash function from 2-universal family
         use 'yield' to itemize
         """
-        hashing = hash_func(str(hash(x)).encode())
-        for i in range(self.hash_num):
-            hashing.update(str(i).encode())
-            yield int(hashing.hexdigest(), 16) % self.hash_size
+        if hash_func == hash:
+            for i in range(self.hash_num):
+                yield hash(str(x) + str(i)) % self.hash_size
+        else:
+            hashing = hash_func(str(hash(x)).encode())
+            for i in range(self.hash_num):
+                hashing.update(str(i).encode())
+                yield int(hashing.hexdigest(), 16) % self.hash_size
 
     def process(self, x, c=1):
         """
@@ -71,6 +75,10 @@ class Simple(Sketch):
     def __init__(self):
         self.counters = Counter()
 
+    def __iadd__(self, other):
+        self.counters += other.counters
+        return self
+
     def process(self, x, c=1):
         self.counters[x] += c
 
@@ -83,11 +91,19 @@ class CountSketch(Sketch):
     def __init__(self, hash_size, hash_num):
         super().__init__(hash_size, hash_num)
 
-    def myhash2(self, x, hash_func=hashlib.sha1):
-        hashing = hash_func(str(hash(x)))
-        for i in range(self.hash_num):
-            hashing.update(str(i))
-            yield (int(hashing.hexdigest(), 16) % 2) * 2 - 1
+    def __iadd__(self, other):
+        self.counters += other.counters
+        return self
+
+    def myhash2(self, x, hash_func=hash):
+        if hash_func == hash:
+            for i in range(self.hash_num):
+                yield (hash(str(x) + str(i)) % 2) * 2 - 1
+        else:
+            hashing = hash_func(str(hash(x)))
+            for i in range(self.hash_num):
+                hashing.update(str(i))
+                yield (int(hashing.hexdigest(), 16) % 2) * 2 - 1
 
     def process(self, x, c=1):
         assert isinstance(c, int) and c > 0, \
@@ -105,6 +121,10 @@ class CountMinSketch(Sketch):
 
     def __init__(self, hash_size, hash_num):
         super().__init__(hash_size, hash_num)
+
+    def __iadd__(self, other):
+        self.counters += other.counters
+        return self
 
     def process(self, x, c=1):
         assert isinstance(c, int) and c > 0, \
