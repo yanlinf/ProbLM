@@ -1,3 +1,11 @@
+# project specific
+*.dat
+memlog/
+models/*
+result/
+corpus/*rm
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
